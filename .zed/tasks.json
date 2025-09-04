@@ -1,0 +1,9 @@
+[
+  {
+    "label": "Development server",
+    "command": "node_modules/.bin/astro dev",
+    "cwd": "$ZED_WORKTREE_ROOT/docs",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  }
+]

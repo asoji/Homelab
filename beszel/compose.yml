@@ -1,0 +1,44 @@
+services:
+  beszel:
+    image: 'henrygd/beszel'
+    container_name: 'beszel'
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./beszel_data:/beszel_data
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.beszel.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.beszel.entrypoints: https
+      traefik.http.routers.beszel.tls: true
+      traefik.http.routers.beszel.tls.certResolver: letsencrypt
+
+      traefik.http.services.beszel-svc.loadbalancer.server.port: 8090
+    networks:
+      - traefik
+
+  beszel-agent:
+    image: 'ghcr.io/dynamyc010/beszel-agent-gpus:latest-amd_nvidia' # thank u dyn frennn, ur great for this 💖
+    container_name: 'beszel-agent'
+    restart: unless-stopped
+    env_file: .env
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/media/.beszel:/extra-filesystems/nvme0n1:ro
+    environment:
+      PORT: ${AGENT_PORT}
+      KEY: ${AGENT_PUBLIC_SSH_KEY}
+      GPU: ${AGENT_GPU}
+      NVIDIA_VISIBLE_DEVICES: all
+    runtime: nvidia
+    devices:
+      - /dev/kfd
+      - /dev/dri
+
+networks:
+  traefik:
+    external: true
