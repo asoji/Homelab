@@ -1,0 +1,36 @@
+services:
+  arcane:
+    image: ghcr.io/ofkm/arcane:latest
+    container_name: arcane
+    # user: '1000:984'
+    networks:
+      - traefik
+    expose: # i hate you. this is needed or else it cant fucking access its DB. do not ask me why, i do not fucking know, ask and i will defenestrate you.
+      - '3000'
+    env_file: .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - arcane-data:/app/data
+      - /srv/containers:/srv/containers:ro
+    environment:
+      - APP_ENV=production
+      - PUBLIC_SESSION_SECRET=${PUBLIC_SESSION_SECRET} # Generate: openssl rand -base64 32
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.arcane.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.arcane.entrypoints: https
+      traefik.http.routers.arcane.tls: true
+      traefik.http.routers.arcane.tls.certResolver: letsencrypt
+
+      traefik.http.services.arcane-svc.loadbalancer.server.port: 3000
+    restart: unless-stopped
+
+
+volumes:
+  arcane-data:
+    driver: local
+
+networks:
+  traefik:
+    external: true
