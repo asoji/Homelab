@@ -37,5 +37,7 @@ but of course if your structure is different, and you know how to work these fil
 
 `/docs` is not part of the homelab, more just documentation for myself and whoever else looks at it. please use `pnpm` to build, no `yarn` or `npm` or **i will steal your fuckin knees. i am not kidding.**
 
+that will be finished one day but for now it's baren, and that's because [at the time of writing] i've spent the past week cleaning up my homelab and then sanity checking against this repo and actual local where i'm copying from. so of course, there's been no time for docs.
+
 ## LICENSE
 [MIT license](LICENSE). as per all my projects. :p
