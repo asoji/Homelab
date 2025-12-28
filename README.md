@@ -10,10 +10,9 @@ expected file structure is to at least have a `containers` and a `data` folder u
 │   ├── beszel
 │   ├── forgejo
 │   ├── glance
-│   ├── hasshole
+│   ├── homeassistant
 │   ├── jellyfin
 │   ├── kavita
-│   ├── minio_dead
 │   ├── ntfy
 │   ├── pocket-id
 │   ├── portainer
