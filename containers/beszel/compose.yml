@@ -1,13 +1,15 @@
 services:
   beszel:
-    image: 'henrygd/beszel'
-    container_name: 'beszel'
+    image: "henrygd/beszel"
+    container_name: "beszel"
     restart: unless-stopped
     env_file: .env
+    #    ports:
+    #      - '8090:8090'
     volumes:
-      - ./beszel_data:/beszel_data
+      - /srv/data/beszel:/beszel_data
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - "host.docker.internal:host-gateway"
     labels:
       traefik.enable: true
 
@@ -21,15 +23,17 @@ services:
       - traefik
 
   beszel-agent:
-    image: 'ghcr.io/dynamyc010/beszel-agent-gpus:latest-amd_nvidia' # thank u dyn frennn, ur great for this 💖
-    container_name: 'beszel-agent'
+    image: "ghcr.io/dynamyc010/beszel-agent-gpus:latest-amd_nvidia" # thank u dyn frennn, ur great for this 💖
+    container_name: "beszel-agent"
     restart: unless-stopped
     env_file: .env
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /mnt/media/.beszel:/extra-filesystems/nvme0n1:ro
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
     environment:
+      APP_URL: ${HOST_DOMAIN}
       PORT: ${AGENT_PORT}
       KEY: ${AGENT_PUBLIC_SSH_KEY}
       GPU: ${AGENT_GPU}
@@ -38,6 +42,13 @@ services:
     devices:
       - /dev/kfd
       - /dev/dri
+      - /dev/nvme0:/dev/nvme0
+      - /dev/nvme1:/dev/nvme1
+    cap_add:
+      - SYS_RAWIO # required for S.M.A.R.T. data
+      - SYS_ADMIN # required for NVMe S.M.A.R.T. data
+#    security_opt:
+#      - seccomp:unconfined
 
 networks:
   traefik:

@@ -1,0 +1,59 @@
+services:
+  postgresql:
+    container_name: zipline-postgres
+    image: postgres:16
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRESQL_USER:-zipline}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD:?POSTGRESSQL_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRESQL_DB:-zipline}
+    networks:
+      - zipline
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "zipline"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zipline:
+    container_name: zipline
+    image: ghcr.io/diced/zipline
+    restart: unless-stopped
+    #    ports:
+    #      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${POSTGRESQL_USER:-zipline}:${POSTGRESQL_PASSWORD}@postgresql:5432/${POSTGRESQL_DB:-zipline}
+    depends_on:
+      - postgresql
+    networks:
+      - zipline
+      - traefik
+    volumes:
+      - "/srv/data/zipline/uploads:/zipline/uploads"
+      - "/srv/data/zipline/public:/zipline/public"
+      - "/srv/data/zipline/themes:/zipline/themes"
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.zipline.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.zipline.entrypoints: https
+      traefik.http.routers.zipline.tls: true
+      traefik.http.routers.zipline.tls.certResolver: letsencrypt
+
+      traefik.http.services.zipline-http-svc.loadbalancer.server.port: 3000
+
+networks:
+  zipline:
+    driver_opts:
+      com.docker.network.bridge.name: zipline
+  traefik:
+    external: true
+
+volumes:
+  pgdata:

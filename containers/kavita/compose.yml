@@ -1,0 +1,30 @@
+services:
+  kavita:
+    image: jvmilazz0/kavita:latest # Using the stable branch from the official dockerhub repo.
+    container_name: kavita
+    env_file: .env
+    volumes:
+      - /mnt/media/kavita/manga:/manga # Manga is just an example you can have the name you want. See the following
+      - /mnt/media/kavita/comics:/comics # Use as many as you want
+      - /mnt/media/kavita/books:/books #
+      - /srv/data/kavita:/kavita/config # Change './data if you want to have the config files in a different place.
+        # /kavita/config must not be changed
+    environment:
+      - TZ=${TZ}
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.kavita.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.kavita.entrypoints: https
+      traefik.http.routers.kavita.tls: true
+      traefik.http.routers.kavita.tls.certResolver: letsencrypt
+      traefik.http.routers.kavita.middlewares: error-pages-middleware@docker
+
+      traefik.http.services.kavita-svc.loadbalancer.server.port: 5000
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

@@ -1,0 +1,24 @@
+services:
+  bagetter:
+    image: bagetter/bagetter:latest
+    container_name: bagetter
+    volumes:
+      - /srv/data/bagetter:/data
+      - ./api-key.txt:/run/secrets/ApiKey:ro
+    env_file: .env
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.bagetter.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.bagetter.entrypoints: https
+      traefik.http.routers.bagetter.tls: true
+      traefik.http.routers.bagetter.tls.certResolver: letsencrypt
+
+      traefik.http.services.bagetter-svc.loadbalancer.server.port: 8080
+    restart: unless-stopped
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

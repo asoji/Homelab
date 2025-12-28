@@ -1,0 +1,24 @@
+services:
+  wallos:
+    container_name: wallos
+    image: bellamy/wallos:latest
+    env_file: .env
+    volumes:
+      - "/srv/data/wallos/db:/var/www/html/db"
+      - "/srv/data/wallos/logos:/var/www/html/images/uploads/logos"
+    restart: unless-stopped
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.wallos.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.wallos.entrypoints: https
+      traefik.http.routers.wallos.tls: true
+      traefik.http.routers.wallos.tls.certResolver: letsencrypt
+
+      traefik.http.services.wallos-svc.loadbalancer.server.port: 80
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

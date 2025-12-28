@@ -1,0 +1,30 @@
+services:
+  pocket-id:
+    container_name: pocket-id
+    image: ghcr.io/pocket-id/pocket-id:v1
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - "/srv/data/pocket-id:/app/data"
+    # Optional healthcheck
+    healthcheck:
+      test: ["CMD", "/app/pocket-id", "healthcheck"]
+      interval: 1m30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.auth.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.auth.entrypoints: https
+      traefik.http.routers.auth.tls: true
+      traefik.http.routers.auth.tls.certResolver: letsencrypt
+
+      traefik.http.services.auth-svc.loadbalancer.server.port: 1411
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

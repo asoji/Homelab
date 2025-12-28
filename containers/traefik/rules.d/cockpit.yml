@@ -1,0 +1,17 @@
+http:
+  routers:
+    cockpit:
+      rule: Host(`{{ env "HOMELAB_HOSTNAME" }}.{{ env "DOMAIN" }}`)
+      entryPoints:
+        - https
+      service: cockpit-svc
+      tls:
+        certResolver: letsencrypt
+  services:
+    cockpit-svc:
+      loadBalancer:
+        healthCheck:
+          interval: "5s"
+          timeout: "3s"
+        servers:
+          - url: "http://host.docker.internal:9090"

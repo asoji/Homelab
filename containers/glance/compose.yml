@@ -1,0 +1,25 @@
+services:
+  glance:
+    container_name: glance
+    image: glanceapp/glance:v0.8.4
+    volumes:
+      - /srv/data/glance:/app/config
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    env_file: .env
+    labels:
+      traefik.enable: true
+
+      traefik.http.routers.glance.rule: Host(`${HOST_DOMAIN}`)
+      traefik.http.routers.glance.entrypoints: https
+      traefik.http.routers.glance.tls: true
+      traefik.http.routers.glance.tls.certResolver: letsencrypt
+
+      traefik.http.services.glance-svc.loadbalancer.server.port: 8080
+    restart: unless-stopped
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

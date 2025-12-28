@@ -1,20 +1,17 @@
 services:
   arcane:
-    image: ghcr.io/ofkm/arcane:latest
+    image: ghcr.io/getarcaneapp/arcane:next # using next to fix an OIDC callback url bug, use latest if you don't plan on using OIDC
     container_name: arcane
     # user: '1000:984'
     networks:
       - traefik
     expose: # i hate you. this is needed or else it cant fucking access its DB. do not ask me why, i do not fucking know, ask and i will defenestrate you.
-      - '3000'
+      - "3552"
     env_file: .env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - arcane-data:/app/data
       - /srv/containers:/srv/containers:ro
-    environment:
-      - APP_ENV=production
-      - PUBLIC_SESSION_SECRET=${PUBLIC_SESSION_SECRET} # Generate: openssl rand -base64 32
+      - /srv/data/arcane:/app/data
     labels:
       traefik.enable: true
 
@@ -23,13 +20,8 @@ services:
       traefik.http.routers.arcane.tls: true
       traefik.http.routers.arcane.tls.certResolver: letsencrypt
 
-      traefik.http.services.arcane-svc.loadbalancer.server.port: 3000
+      traefik.http.services.arcane-svc.loadbalancer.server.port: 3552
     restart: unless-stopped
-
-
-volumes:
-  arcane-data:
-    driver: local
 
 networks:
   traefik:
